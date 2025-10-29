@@ -229,6 +229,18 @@ async def load_models():
         print("Loading DT + Scaler...")
         dt_model = joblib.load("Decision_Tree.pkl")
         scaler = joblib.load("scaler.pkl")
+        # Fix compatibility: Add missing monotonic_cst attribute for newer scikit-learn versions
+        # This attribute was introduced in scikit-learn 1.6.0 for monotonic constraints
+        if not hasattr(dt_model, 'monotonic_cst'):
+            try:
+                # Try to set it via __dict__ for maximum compatibility
+                dt_model.__dict__['monotonic_cst'] = None
+            except (AttributeError, TypeError):
+                # If that fails, try setattr
+                try:
+                    setattr(dt_model, 'monotonic_cst', None)
+                except:
+                    pass  # If all else fails, let it be - might work anyway
         print("DT + Scaler loaded!")
     if yolo_model is None:
         print("Loading YOLO...")
@@ -273,6 +285,13 @@ app.add_middleware(
 async def predict_health(data: SensorData):
     try:
         await load_models()  # Lazy load
+        # Ensure monotonic_cst exists (compatibility fix for scikit-learn version differences)
+        if not hasattr(dt_model, 'monotonic_cst'):
+            try:
+                dt_model.monotonic_cst = None
+            except:
+                pass
+        
         input_data = np.array([[
             data.Plant_ID, data.Soil_Moisture, data.Ambient_Temperature, 
             data.Soil_Temperature, data.Humidity, data.Light_Intensity,
