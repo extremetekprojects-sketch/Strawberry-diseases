@@ -289,7 +289,7 @@ st.set_page_config(page_title="🌱 Strawberry Disease Predictor", layout="wide"
 
 def check_api_status():
     try:
-        response = requests.get(f"{API_URL}/", timeout=10)  # Short for status
+        response = requests.get(f"{API_URL}/", timeout=60)  # Short for status
         return response.status_code == 200
     except:
         return False
@@ -420,3 +420,4 @@ elif page == "📸 Image Detection":
                     st.error("🚨 **Timeout Error:** Detection took too long. Try a smaller image or wake backend.")
                 except Exception as e:
                     st.error(f"🚨 **Error:** {str(e)}")
+
